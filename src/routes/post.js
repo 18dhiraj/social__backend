@@ -30,7 +30,7 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
             user,
             title,
             description,
-            image: req?.file?.fieldname ? "https://social-18.onrender.com" + req.file.filename : null,
+            image: req?.file?.fieldname ? "https://social-18.onrender.com/" + req.file.filename : null,
             timestamp: new Date().toLocaleDateString()
         };
         await posts.insertOne(postdata);
