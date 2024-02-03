@@ -18,10 +18,7 @@ const upload = multer({ storage: storage });
 
 router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
 
-    // try {
-    // console.log(req.file)
     let user = getUserByToken(req.headers.authorization)
-    // console.log(user)
     let database = await client.db('Social');
     const posts = database.collection('posts');
 
@@ -33,7 +30,7 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
             user,
             title,
             description,
-            image: req?.file?.fieldname ? "https://social-3d7i.onrender.com/" + req.file.filename : null,
+            image: req?.file?.fieldname ? "https://social-18.onrender.com" + req.file.filename : null,
             timestamp: new Date().toLocaleDateString()
         };
         await posts.insertOne(postdata);

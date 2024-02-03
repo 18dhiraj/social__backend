@@ -3,7 +3,7 @@
 var jwt = require('jsonwebtoken');
 
 const getUserByToken = (token) => {
-    console.log(token)
+    // console.log(token)
     if (token) {
         token = token.replace(/^Bearer\s+/, "");
         let data = jwt.decode(token)
