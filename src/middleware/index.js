@@ -4,7 +4,6 @@ let secret = process.env.JWT
 
 const verifyToken = (req, res, next) => {
     let token = req.headers?.authorization || null
-    // console.log(req.headers)
     try {
         if (token) {
             // token = token.replace(/^Bearer\s+/, "");
