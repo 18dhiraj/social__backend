@@ -6,7 +6,6 @@ const verifyToken = (req, res, next) => {
     let token = req.headers?.authorization || null
     try {
         if (token) {
-            // token = token.replace(/^Bearer\s+/, "");
             let validate = jwt.verify(token, secret)
             if (validate) {
                 next()
@@ -16,13 +15,9 @@ const verifyToken = (req, res, next) => {
         } else {
             sendError("unauthorized!", res)
         }
-
-
     } catch {
         sendError("some error occured!", res)
     }
-
 }
-
 
 module.exports = { verifyToken }

@@ -1,8 +1,8 @@
 const express = require('express');
-const router = express.Router();
 const { sendError, getUserByToken } = require('../helpers/index')
 const { verifyToken } = require('../middleware')
 const { client } = require('../connection')
+const router = express.Router();
 const multer = require('multer')
 
 var storage = multer.diskStorage({
@@ -10,7 +10,7 @@ var storage = multer.diskStorage({
         cb(null, "./uploads");
     },
     filename: function (req, file, cb) {
-        cb(null, file.originalname + Date.now() + ".jpeg");
+        cb(null, Date.now() + file.originalname);
     },
 });
 
@@ -21,7 +21,7 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
     let user = getUserByToken(req.headers.authorization)
     let database = await client.db('Social');
     const posts = database.collection('posts');
-
+    console.log(req.file)
     let { title = '', description = '' } = req.body;
 
     if (title.trim() != '' && description.trim() != '') {
