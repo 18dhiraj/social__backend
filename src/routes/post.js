@@ -19,36 +19,36 @@ const upload = multer({ storage: storage });
 
 router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
 
-    let user = getUserByToken(req.headers.authorization)
-    let database = await client.db('Social');
-    const posts = database.collection('posts');
-    console.log(req.body)
-    let { title, description } = req.body;
+    try {
+        let user = getUserByToken(req.headers.authorization)
+        let database = await client.db('Social');
+        const posts = database.collection('posts');
+        console.log(req.body)
+        let { title, description } = req.body;
 
-    if (title != undefined && title.trim() != "" && description != undefined && description.trim() != '') {
+        if (title != undefined && title.trim() != "" && description != undefined && description.trim() != '') {
 
-        const postdata = {
-            user,
-            title,
-            description,
-            image: req?.file?.fieldname ? "https://social-18.onrender.com/" + req.file.filename : null,
-            timestamp: new Date().toLocaleDateString()
-        };
-        await posts.insertOne(postdata);
+            const postdata = {
+                user,
+                title,
+                description,
+                image: req?.file?.fieldname ? "https://social-18.onrender.com/" + req.file.filename : null,
+                timestamp: new Date().toLocaleDateString()
+            };
+            await posts.insertOne(postdata);
 
-        let resData = {
-            "success": true,
-            "data": postdata,
+            let resData = {
+                "success": true,
+                "data": postdata,
+            }
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.send(resData)
+        } else {
+            sendError("Please fill all the fields!", res)
         }
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.send(resData)
-    } else {
-        sendError("Please fill all the fields!", res)
+    } catch {
+        sendError("Some error occured", res)
     }
-
-    // } catch {
-    //     sendError("Some error occured", res)
-    // }
 
 })
 
