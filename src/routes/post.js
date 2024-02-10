@@ -4,6 +4,7 @@ const { verifyToken } = require('../middleware')
 const { client } = require('../connection')
 const router = express.Router();
 const multer = require('multer')
+const { ObjectId } = require('mongodb');
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -21,10 +22,10 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
     let user = getUserByToken(req.headers.authorization)
     let database = await client.db('Social');
     const posts = database.collection('posts');
-    console.log(req.file)
-    let { title = '', description = '' } = req.body;
+    console.log(req.body)
+    let { title, description } = req.body;
 
-    if (title.trim() != '' && description.trim() != '') {
+    if (title != undefined && title.trim() != "" && description != undefined && description.trim() != '') {
 
         const postdata = {
             user,
@@ -66,6 +67,34 @@ router.get('/', verifyToken, async (req, res) => {
         }
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.send(resData)
+
+    } catch {
+        sendError("Some error occured", res)
+    }
+
+})
+router.post('/delete', verifyToken, async (req, res) => {
+
+    try {
+        let database = await client.db('Social');
+        const posts = database.collection('posts');
+        console.log(req.body)
+        let id = req.body.id
+
+        const allposts = await posts.deleteOne({ _id: new ObjectId(id) })
+        console.log(allposts)
+        if (allposts.deletedCount) {
+
+            let resData = {
+                "success": true,
+                "data": allposts,
+            }
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.send(resData)
+        } else {
+            sendError("Not forund! please try again!", res)
+
+        }
 
     } catch {
         sendError("Some error occured", res)
