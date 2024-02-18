@@ -8,7 +8,6 @@ const { ObjectId } = require('mongodb');
 var admin = require("firebase-admin");
 const { v4: uuidv4 } = require('uuid');
 
-
 const key = Buffer.from(process.env.PRIVATE_KEY, 'base64').toString('ascii');
 
 let initializeFirebasestorage = {
@@ -36,11 +35,9 @@ const upload = multer({ storage: storage });
 router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
 
     try {
-        console.log(1)
         let user = getUserByToken(req.headers.authorization)
         let database = client.db('Social');
         const posts = database.collection('posts');
-        // console.log(req.body)
         let { title, description } = req.body;
 
         if (title != undefined && title.trim() != "" && description != undefined && description.trim() != '') {
@@ -58,8 +55,7 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
                     contentType: 'image/png',
                     cacheControl: 'public, max-age=31536000',
                 };
-                const result = await file.save(imageBuffer, { gzip: true, metadata: metadata });
-                console.log('Image uploaded successfully:', result);
+                await file.save(imageBuffer, { gzip: true, metadata: metadata });
                 postdata = {
                     user,
                     title,

@@ -34,6 +34,3 @@ let PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log("connedted to the server.......")
 });
-
-
-
