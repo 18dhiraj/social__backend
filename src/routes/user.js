@@ -10,16 +10,13 @@ var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 
 router.post('/login', async (req, res) => {
-    // console.log(req.body)
     const { email = '', password = '' } = req.body
-
     if (email?.trim() != '' && password?.trim() != '') {
 
-        let database = await client.db('Social');
+        let database = client.db('Social');
         const users = database.collection('users');
         const query = { email };
         let user = await users.findOne(query);
-
 
         if (user) {
             let validate = await bcrypt.compare(password, user.password)
@@ -46,15 +43,13 @@ router.post('/login', async (req, res) => {
 
 })
 
-
-
 router.post('/signup', async (req, res) => {
 
     const { email = '', password = '', name = '' } = req.body
     if (email?.trim() != '' && password?.trim() != '' && name?.trim() != '') {
 
         await client.connect();
-        let database = await client.db('Social');
+        let database = client.db('Social');
         const users = database.collection('users');
         let ress = await users.findOne({ email })
         if (ress == null) {
@@ -89,7 +84,7 @@ router.get('/profile', verifyToken, async (req, res) => {
     let token = req.headers?.authorization || null
 
     if (token) {
-        let response = await jwt.decode(token)
+        let response = jwt.decode(token)
         if (response?.user) {
             let resData = {
                 "success": true,
