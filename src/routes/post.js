@@ -5,29 +5,8 @@ const { client } = require('../connection')
 const router = express.Router();
 const multer = require('multer')
 const { ObjectId } = require('mongodb');
-var admin = require("firebase-admin");
 const { v4: uuidv4 } = require('uuid');
-
-const key = Buffer.from(process.env.PRIVATE_KEY, 'base64').toString('ascii');
-
-let initializeFirebasestorage = {
-    type: process.env.TYPE,
-    project_id: process.env.PROJECT_ID,
-    private_key_id: process.env.PRIVATE_KEY_ID,
-    private_key: key,
-    client_email: process.env.CLIENT_EMAIL,
-    client_id: process.env.CLINET_ID,
-    auth_uri: process.env.AUTH_ID,
-    token_uri: process.env.TOKEN_URI,
-    auth_provider_x509_cert_url: process.env.AUTHPROVIDER_ID,
-    client_x509_cert_url: process.env.CLIENTCERT_URL,
-    universe_domain: process.env.UNIVERSAL_DOMAIN
-}
-
-admin.initializeApp({
-    credential: admin.credential.cert(initializeFirebasestorage),
-    storageBucket: process.env.STORAGE_BUCKET
-});
+const { admin } = require('../initializeGoogleBucked')
 
 var storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -57,7 +36,7 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
                 };
                 await file.save(imageBuffer, { gzip: true, metadata: metadata });
                 postdata = {
-                    user,
+                    user: new ObjectId(user._id),
                     title,
                     description,
                     image: 'https://firebasestorage.googleapis.com/v0/b/' + bucket.name + '/o/' + imageName + '?alt=media&token=' + id,
@@ -65,7 +44,7 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
                 };
             } else {
                 postdata = {
-                    user,
+                    user: new ObjectId(user._id),
                     title,
                     description,
                     image: null,
@@ -86,26 +65,43 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
     } catch {
         sendError("Some error occured", res)
     }
-
 })
 
 
 router.get('/', verifyToken, async (req, res) => {
 
-    try {
-        let database = client.db('Social');
-        const posts = database.collection('posts');
-        const allposts = await posts.find({}).toArray()
-        let resData = {
-            "success": true,
-            "data": allposts,
+    // try {
+    let database = client.db('Social');
+    const posts = database.collection('posts');
+    // const allposts = await posts.find({}).toArray()
+    const allposts = await posts.aggregate([
+        { $lookup: { from: "users", localField: "user", foreignField: "_id", as: "userDetails" } },
+        { $unwind: '$userDetails' },
+        {
+            $project: {
+                title: 1,
+                description: 1,
+                image: 1,
+                timestamp: 1,
+                userDetails: "$userDetails"
+            }
         }
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.send(resData)
+    ]).toArray()
+    // { from: "users", localField: "user_id", foreignField: "_id", as: "user" } 
+    // const allpostss = await posts.aggregate()
 
-    } catch {
-        sendError("Some error occured", res)
+    // console.log(allpostss)
+
+    let resData = {
+        "success": true,
+        "data": allposts,
     }
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.send(resData)
+
+    // } catch {
+    //     sendError("Some error occured!", res)
+    // }
 
 })
 router.post('/delete', verifyToken, async (req, res) => {
