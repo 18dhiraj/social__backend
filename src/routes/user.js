@@ -131,6 +131,7 @@ router.post('/profileimage', verifyToken, upload.single('profileImage'), async (
         await file.save(imageBuffer, { gzip: true, metadata: metadata });
 
         let image = 'https://firebasestorage.googleapis.com/v0/b/' + bucket.name + '/o/' + imageName + '?alt=media&token=' + id
+
         await users.findOneAndUpdate(
             { "_id": new ObjectId(user._id) },
             { $set: { image: image } },
@@ -138,13 +139,12 @@ router.post('/profileimage', verifyToken, upload.single('profileImage'), async (
         )
 
         let profileData = {
-            name: user.name,
-            email: user.email,
+            ...user,
             image: image
         }
         let resData = {
             "success": true,
-            "message": profileData,
+            "data": profileData,
         }
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.send(resData)
