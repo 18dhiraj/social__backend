@@ -46,7 +46,6 @@ router.post('/login', async (req, res) => {
     else {
         sendError("Please fill all the fields!", res)
     }
-
 })
 
 router.post('/signup', async (req, res) => {
@@ -54,7 +53,6 @@ router.post('/signup', async (req, res) => {
     const { email = '', password = '', name = '' } = req.body
     if (email?.trim() != '' && password?.trim() != '' && name?.trim() != '') {
 
-        // await client.connect();
         let database = client.db('Social');
         const users = database.collection('users');
         let ress = await users.findOne({ email })
@@ -92,9 +90,14 @@ router.get('/profile', verifyToken, async (req, res) => {
     if (token) {
         let response = jwt.decode(token)
         if (response?.user) {
+            let database = client.db('Social');
+            const users = database.collection('users');
+            const query = { email: res.user.email };
+            let user = await users.findOne(query);
+
             let resData = {
+                "data": user,
                 "success": true,
-                "data": response.user,
             }
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.send(resData)
@@ -133,7 +136,6 @@ router.post('/profileimage', verifyToken, upload.single('profileImage'), async (
             { $set: { image: image } },
             { upsert: true }
         )
-        // console.log(ress)
 
         let profileData = {
             name: user.name,
