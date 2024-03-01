@@ -92,7 +92,7 @@ router.get('/profile', verifyToken, async (req, res) => {
         if (response?.user) {
             let database = client.db('Social');
             const users = database.collection('users');
-            const query = { email: res.user.email };
+            const query = { email: response.user.email };
             let user = await users.findOne(query);
 
             let resData = {
