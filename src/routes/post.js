@@ -70,38 +70,38 @@ router.post('/create', verifyToken, upload.single('post'), async (req, res) => {
 
 router.get('/', verifyToken, async (req, res) => {
 
-    // try {
-    let database = client.db('Social');
-    const posts = database.collection('posts');
-    // const allposts = await posts.find({}).toArray()
-    const allposts = await posts.aggregate([
-        { $lookup: { from: "users", localField: "user", foreignField: "_id", as: "userDetails" } },
-        { $unwind: '$userDetails' },
-        {
-            $project: {
-                title: 1,
-                description: 1,
-                image: 1,
-                timestamp: 1,
-                userDetails: "$userDetails"
+    try {
+        let database = client.db('Social');
+        const posts = database.collection('posts');
+        // const allposts = await posts.find({}).toArray()
+        const allposts = await posts.aggregate([
+            { $lookup: { from: "users", localField: "user", foreignField: "_id", as: "userDetails" } },
+            { $unwind: '$userDetails' },
+            {
+                $project: {
+                    title: 1,
+                    description: 1,
+                    image: 1,
+                    timestamp: 1,
+                    userDetails: "$userDetails"
+                }
             }
+        ]).toArray()
+        // { from: "users", localField: "user_id", foreignField: "_id", as: "user" } 
+        // const allpostss = await posts.aggregate()
+
+        // console.log(allpostss)
+
+        let resData = {
+            "success": true,
+            "data": allposts,
         }
-    ]).toArray()
-    // { from: "users", localField: "user_id", foreignField: "_id", as: "user" } 
-    // const allpostss = await posts.aggregate()
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.send(resData)
 
-    // console.log(allpostss)
-
-    let resData = {
-        "success": true,
-        "data": allposts,
+    } catch {
+        sendError("Some error occured!", res)
     }
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.send(resData)
-
-    // } catch {
-    //     sendError("Some error occured!", res)
-    // }
 
 })
 router.post('/delete', verifyToken, async (req, res) => {
