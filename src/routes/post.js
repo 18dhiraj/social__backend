@@ -1,5 +1,5 @@
 const express = require('express');
-const { sendError, getUserByToken } = require('../helpers/index')
+const { sendError, getUserByToken, extractFilePath } = require('../helpers/index')
 const { verifyToken } = require('../middleware')
 const { client } = require('../connection')
 const router = express.Router();
@@ -110,6 +110,20 @@ router.post('/delete', verifyToken, async (req, res) => {
         let database = await client.db('Social');
         const posts = database.collection('posts');
         let id = req.body.id
+        const query = { _id: new ObjectId(id) };
+        let post = await posts.findOne(query);
+        if (post.image) {
+            let path = extractFilePath(post.image)
+            const bucket = admin.storage().bucket();
+            bucket.file(path).delete()
+                .then(() => {
+                    console.log('File deleted successfully');
+                })
+                .catch((error) => {
+                    console.error('Error deleting file:', error);
+                });
+        }
+
         const allposts = await posts.deleteOne({ _id: new ObjectId(id) })
         if (allposts.deletedCount) {
             let resData = {
