@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { sendError, getUserByToken } = require('../helpers')
+const { sendError, getUserByToken, extractFilePath } = require('../helpers')
 const { client } = require('../connection')
 let secret = process.env.JWT
 const { verifyToken } = require('../middleware')
@@ -121,6 +121,20 @@ router.post('/profileimage', verifyToken, upload.single('profileImage'), async (
         const imageBuffer = req.file.buffer;
         const imageName = req.file.originalname;
         const file = bucket.file(imageName);
+
+        if (user.image) {
+            const query = { email: user.email };
+            let _user = await users.findOne(query);
+            let path = extractFilePath(_user.image)
+            console.log(path)
+            bucket.file(path).delete()
+                .then(() => {
+                    console.log('File deleted successfully');
+                })
+                .catch((error) => {
+                    console.error('Error deleting file:', error);
+                });
+        }
         const metadata = {
             metadata: {
                 firebaseStorageDownloadTokens: id
