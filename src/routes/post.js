@@ -116,7 +116,7 @@ router.get('/user', verifyToken, async (req, res) => {
             if (response?.user) {
                 let database = client.db('Social');
                 const posts = database.collection('posts');
-                const query = { "user._id": response.user._id };
+                const query = { "user": new ObjectId(response.user._id) };
                 let userPosts = await posts.find(query).toArray();
 
                 console.log(userPosts)
