@@ -119,9 +119,10 @@ router.get('/user', verifyToken, async (req, res) => {
                 let userPosts = await posts.find(query).toArray();
 
                 let new_data = userPosts.map((item) => {
-                    return { ...item, userDetails: res.user }
+                    return { ...item, userDetails: response.user }
                 })
 
+                console.log(new_data)
                 let resData = {
                     "success": true,
                     "data": new_data,
