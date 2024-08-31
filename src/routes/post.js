@@ -112,21 +112,19 @@ router.get('/user', verifyToken, async (req, res) => {
         // console.log(token)
         if (token) {
             let response = jwt.decode(token)
-            console.log(response)
             if (response?.user) {
                 let database = client.db('Social');
                 const posts = database.collection('posts');
                 const query = { "user": new ObjectId(response.user._id) };
                 let userPosts = await posts.find(query).toArray();
 
-                userPosts.map((item) => {
+                let new_data = userPosts.map((item) => {
                     return { ...item, userDetails: res.user }
                 })
 
-                console.log(userPosts)
                 let resData = {
                     "success": true,
-                    "data": userPosts,
+                    "data": new_data,
                 }
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 res.send(resData)
