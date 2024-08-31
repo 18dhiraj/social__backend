@@ -119,6 +119,10 @@ router.get('/user', verifyToken, async (req, res) => {
                 const query = { "user": new ObjectId(response.user._id) };
                 let userPosts = await posts.find(query).toArray();
 
+                userPosts.map((item) => {
+                    return { ...item, userDetails: res.user }
+                })
+
                 console.log(userPosts)
                 let resData = {
                     "success": true,
