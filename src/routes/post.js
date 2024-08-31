@@ -7,6 +7,7 @@ const multer = require('multer')
 const { ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const { admin } = require('../initializeGoogleBucked')
+var jwt = require('jsonwebtoken');
 
 var storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -103,6 +104,37 @@ router.get('/', verifyToken, async (req, res) => {
         sendError("Some error occured!", res)
     }
 
+})
+router.get('/user', verifyToken, async (req, res) => {
+
+    try {
+        let token = req.headers?.authorization || null
+        // console.log(token)
+        if (token) {
+            let response = jwt.decode(token)
+            console.log(response)
+            if (response?.user) {
+                let database = client.db('Social');
+                const posts = database.collection('posts');
+                const query = { "user._id": response.user._id };
+                let userPosts = await posts.find(query).toArray();
+
+                console.log(userPosts)
+                let resData = {
+                    "success": true,
+                    "data": userPosts,
+                }
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                res.send(resData)
+            }
+        } else {
+            sendError("UnAuthorized!", res)
+
+        }
+
+    } catch {
+        sendError("Some error occured!", res)
+    }
 })
 router.post('/delete', verifyToken, async (req, res) => {
 
